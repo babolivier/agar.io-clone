@@ -3,7 +3,18 @@ var ChatClient = require('./chat-client');
 var Canvas = require('./canvas');
 var global = require('./global');
 
-var playerNameInput = document.getElementById('playerNameInput');
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+// var playerNameInput = document.getElementById('playerNameInput');
+var playerNameInput = getParameterByName('username', window.location) || 'matrix user';
 var socket;
 var reason;
 
@@ -18,7 +29,7 @@ if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 }
 
 function startGame(type) {
-    global.playerName = playerNameInput.value.replace(/(<([^>]+)>)/ig, '').substring(0,25);
+    global.playerName = playerNameInput.replace(/(<([^>]+)>)/ig, '').substring(0,25);
     global.playerType = type;
 
     global.screenWidth = window.innerWidth;
@@ -42,8 +53,8 @@ function startGame(type) {
 // Checks if the nick chosen contains valid alphanumeric characters (and underscores).
 function validNick() {
     var regex = /^\w*$/;
-    debug('Regex Test', regex.exec(playerNameInput.value));
-    return regex.exec(playerNameInput.value) !== null;
+    debug('Regex Test', regex.exec(playerNameInput));
+    return regex.exec(playerNameInput) !== null;
 }
 
 window.onload = function() {
@@ -51,6 +62,14 @@ window.onload = function() {
     var btn = document.getElementById('startButton'),
         btnS = document.getElementById('spectateButton'),
         nickErrorText = document.querySelector('#startMenu .input-error');
+
+    // Checks if the nick is valid.
+    // if (validNick()) {
+        nickErrorText.style.opacity = 0;
+        startGame('player');
+    // } else {
+    //     nickErrorText.style.opacity = 1;
+    // }
 
     btnS.onclick = function () {
         startGame('spectate');
@@ -79,18 +98,18 @@ window.onload = function() {
         }
     };
 
-    playerNameInput.addEventListener('keypress', function (e) {
-        var key = e.which || e.keyCode;
-
-        if (key === global.KEY_ENTER) {
-            if (validNick()) {
-                nickErrorText.style.opacity = 0;
-                startGame('player');
-            } else {
-                nickErrorText.style.opacity = 1;
-            }
-        }
-    });
+    // playerNameInput.addEventListener('keypress', function (e) {
+    //     var key = e.which || e.keyCode;
+    //
+    //     if (key === global.KEY_ENTER) {
+    //         if (validNick()) {
+    //             nickErrorText.style.opacity = 0;
+    //             startGame('player');
+    //         } else {
+    //             nickErrorText.style.opacity = 1;
+    //         }
+    //     }
+    // });
 };
 
 // TODO: Break out into GameControls.
