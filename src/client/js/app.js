@@ -10,11 +10,14 @@ function getParameterByName(name, url) {
         results = regex.exec(url);
     if (!results) return null;
     if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
+    var param = decodeURIComponent(results[2].replace(/\+/g, " "));
+    console.log(name, '->', param);
+    return param;
 }
 
 // var playerNameInput = document.getElementById('playerNameInput');
 var playerNameInput = getParameterByName('username', window.location) || 'matrix user';
+var roomName = getParameterByName('room', window.location);
 var socket;
 var reason;
 
@@ -39,8 +42,9 @@ function startGame(type) {
     document.getElementById('startMenuWrapper').style.maxHeight = '0px';
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
-        socket = io({query:"type=" + type});
+        socket = io({query:"type=" + type + "&room=" + roomName});
         setupSocket(socket);
+        console.log('Set up socket:', socket);
     }
     if (!global.animLoopHandle)
         animloop();
@@ -184,17 +188,20 @@ function setupSocket(socket) {
 
     // Handle error.
     socket.on('connect_failed', function () {
+        console.error('Could not connect to the server');
         socket.close();
         global.disconnected = true;
     });
 
     socket.on('disconnect', function () {
+        console.error('Got disconnected');
         socket.close();
         global.disconnected = true;
     });
 
     // Handle connection.
     socket.on('welcome', function (playerSettings) {
+        console.log('Received the welcome event');
         player = playerSettings;
         player.name = global.playerName;
         player.screenWidth = global.screenWidth;
