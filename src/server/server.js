@@ -500,10 +500,11 @@ io.on('connection', function (socket) {
 });
 
 function tickPlayer(currentPlayer, room) {
-    if(currentPlayer.lastHeartbeat < new Date().getTime() - c.maxHeartbeatInterval) {
-        rooms[room].sockets[currentPlayer.id].emit('kick', 'Last heartbeat received over ' + c.maxHeartbeatInterval + ' ago.');
-        rooms[room].sockets[currentPlayer.id].disconnect();
-    }
+    // On a chat context, we can't allow disconnecting because of a time limit
+    // if(currentPlayer.lastHeartbeat < new Date().getTime() - c.maxHeartbeatInterval) {
+    //     rooms[room].sockets[currentPlayer.id].emit('kick', 'Last heartbeat received over ' + c.maxHeartbeatInterval + ' ago.');
+    //     rooms[room].sockets[currentPlayer.id].disconnect();
+    // }
 
     movePlayer(currentPlayer);
 
