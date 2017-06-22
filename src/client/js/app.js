@@ -14,7 +14,6 @@ function getParameterByName(name, url) {
     return param;
 }
 
-// var playerNameInput = document.getElementById('playerNameInput');
 var playerNameInput = getParameterByName('username', window.location) || 'matrix user';
 var roomName = getParameterByName('room', window.location);
 var socket;
@@ -31,14 +30,12 @@ if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent) ) {
 }
 
 function startGame(type) {
-    // global.playerName = playerNameInput.replace(/(<([^>]+)>)/ig, '').substring(0,25);
     global.playerName = playerNameInput.replace(/(<([^>]+)>)/ig, '');
     global.playerType = type;
 
     global.screenWidth = window.innerWidth;
     global.screenHeight = window.innerHeight;
 
-    document.getElementById('startMenuWrapper').style.maxHeight = '0px';
     document.getElementById('gameAreaWrapper').style.opacity = 1;
     if (!socket) {
         socket = io({query:"type=" + type + "&room=" + roomName});
@@ -60,24 +57,17 @@ function validNick() {
 }
 
 window.onload = function() {
+    document.getElementById('deathScreenWrapper').style.width = window.innerWidth + 'px';
+    document.getElementById('deathScreenWrapper').style.height = window.innerHeight + 'px';
 
-    var btn = document.getElementById('startButton'),
-        nickErrorText = document.querySelector('#startMenu .input-error');
-
-    nickErrorText.style.opacity = 0;
-    startGame('player');
-
-    var settingsMenu = document.getElementById('settingsButton');
-    var settings = document.getElementById('settings');
-    var instructions = document.getElementById('instructions');
-
-    settingsMenu.onclick = function () {
-        if (settings.style.maxHeight == '300px') {
-            settings.style.maxHeight = '0px';
-        } else {
-            settings.style.maxHeight = '300px';
-        }
+    var respawnBtn = document.getElementById('respawnButton');
+    respawnBtn.onclick = function () {
+        document.getElementById('gameAreaWrapper').style.display = "block";
+        document.getElementById('deathScreenWrapper').style.display = "none";
+        startGame('player');
     };
+
+    startGame('player');
 };
 
 // TODO: Break out into GameControls.
@@ -113,18 +103,6 @@ var target = {x: player.x, y: player.y};
 global.target = target;
 
 window.canvas = new Canvas();
-
-var visibleBorderSetting = document.getElementById('visBord');
-visibleBorderSetting.onchange = settings.toggleBorder;
-
-var showMassSetting = document.getElementById('showMass');
-showMassSetting.onchange = settings.toggleMass;
-
-var continuitySetting = document.getElementById('continuity');
-continuitySetting.onchange = settings.toggleContinuity;
-
-var roundFoodSetting = document.getElementById('roundFood');
-roundFoodSetting.onchange = settings.toggleRoundFood;
 
 var c = window.canvas.cv;
 var graph = c.getContext('2d');
@@ -236,15 +214,8 @@ function setupSocket(socket) {
     socket.on('RIP', function () {
         global.gameStart = false;
         global.died = true;
-        window.setTimeout(function() {
-            document.getElementById('gameAreaWrapper').style.opacity = 0;
-            document.getElementById('startMenuWrapper').style.maxHeight = '1000px';
-            global.died = false;
-            if (global.animLoopHandle) {
-                window.cancelAnimationFrame(global.animLoopHandle);
-                global.animLoopHandle = undefined;
-            }
-        }, 2500);
+        document.getElementById('gameAreaWrapper').style.display = "none";
+        document.getElementById('deathScreenWrapper').style.display = "table-cell";
     });
 
     socket.on('kick', function (data) {
@@ -496,16 +467,7 @@ function animloop() {
 }
 
 function gameLoop() {
-    if (global.died) {
-        graph.fillStyle = '#333333';
-        graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
-
-        graph.textAlign = 'center';
-        graph.fillStyle = '#FFFFFF';
-        graph.font = 'bold 30px sans-serif';
-        graph.fillText('You died!', global.screenWidth / 2, global.screenHeight / 2);
-    }
-    else if (!global.disconnected) {
+    if (!global.disconnected) {
         if (global.gameStart) {
             graph.fillStyle = global.backgroundColor;
             graph.fillRect(0, 0, global.screenWidth, global.screenHeight);
