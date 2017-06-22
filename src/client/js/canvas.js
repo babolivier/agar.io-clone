@@ -13,7 +13,6 @@ class Canvas {
         this.cv.width = global.screenWidth;
         this.cv.height = global.screenHeight;
         this.cv.addEventListener('mousemove', this.gameInput, false);
-        this.cv.addEventListener('mouseout', this.outOfBounds, false);
         this.cv.addEventListener('keypress', this.keyInput, false);
         this.cv.addEventListener('keyup', function(event) {
             self.reenviar = true;
